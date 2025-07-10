@@ -44,7 +44,7 @@ echo -e "${YELLOW}Testing SQLC sample:${NC}"
 echo ""
 
 echo -e "${BLUE}⚡ Running performance benchmarks...${NC}"
-/usr/local/bin/test_runner
+go run test_runner.go
 
 echo -e "${GREEN}✅ All tests completed successfully!${NC}"
 echo ""
