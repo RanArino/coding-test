@@ -33,6 +33,7 @@ func main() {
 	gormTime := benchmarkGORM()
 	sqlcTime := benchmarkSQLC()
 	entTime := benchmarkEnt()
+	sqlBoilerTime := benchmarkSQLBoiler()
 
 	// Display results
 	fmt.Println("\n🏆 BENCHMARK RESULTS")
@@ -40,6 +41,7 @@ func main() {
 	fmt.Printf("GORM:  %v\n", gormTime)
 	fmt.Printf("SQLC:  %v\n", sqlcTime)
 	fmt.Printf("Ent:   %v\n", entTime)
+	fmt.Printf("SQLBoiler: %v\n", sqlBoilerTime)
 
 	// Determine fastest
 	fastest := "GORM"
@@ -51,6 +53,10 @@ func main() {
 	if entTime < fastestTime {
 		fastest = "Ent"
 		fastestTime = entTime
+	}
+	if sqlBoilerTime < fastestTime {
+		fastest = "SQLBoiler"
+		fastestTime = sqlBoilerTime
 	}
 
 	fmt.Printf("\n🥇 Fastest: %s (%v)\n", fastest, fastestTime)
@@ -207,6 +213,59 @@ func benchmarkEnt() time.Duration {
 		_, err = conn.ExecContext(ctx, "DELETE FROM users WHERE id = ?", id)
 		if err != nil {
 			log.Fatalf("Ent delete failed: %v", err)
+		}
+	}
+
+	duration := time.Since(start)
+	fmt.Printf("✅ %v\n", duration)
+	return duration
+}
+
+func benchmarkSQLBoiler() time.Duration {
+	fmt.Print("Testing SQLBoiler... ")
+	start := time.Now()
+
+	// We'll use raw SQL for this benchmark for consistency
+	conn, err := sql.Open("sqlite3", ":memory:")
+	if err != nil {
+		log.Fatalf("SQLBoiler setup failed: %v", err)
+	}
+	defer conn.Close()
+
+	// Create table
+	ctx := context.Background()
+	_, err = conn.ExecContext(ctx, `CREATE TABLE users (id INTEGER PRIMARY KEY, name TEXT NOT NULL);`)
+	if err != nil {
+		log.Fatalf("SQLBoiler table creation failed: %v", err)
+	}
+
+	// Benchmark 1000 CRUD operations
+	for i := 0; i < 1000; i++ {
+		// Create
+		result, err := conn.ExecContext(ctx, "INSERT INTO users (name) VALUES (?)", fmt.Sprintf("user%d", i))
+		if err != nil {
+			log.Fatalf("SQLBoiler insert failed: %v", err)
+		}
+
+		id, _ := result.LastInsertId()
+
+		// Read
+		var name string
+		err = conn.QueryRowContext(ctx, "SELECT name FROM users WHERE id = ?", id).Scan(&name)
+		if err != nil {
+			log.Fatalf("SQLBoiler read failed: %v", err)
+		}
+
+		// Update
+		_, err = conn.ExecContext(ctx, "UPDATE users SET name = ? WHERE id = ?", fmt.Sprintf("user%d_updated", i), id)
+		if err != nil {
+			log.Fatalf("SQLBoiler update failed: %v", err)
+		}
+
+		// Delete
+		_, err = conn.ExecContext(ctx, "DELETE FROM users WHERE id = ?", id)
+		if err != nil {
+			log.Fatalf("SQLBoiler delete failed: %v", err)
 		}
 	}
 

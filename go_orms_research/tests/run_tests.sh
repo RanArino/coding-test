@@ -26,6 +26,7 @@ echo -e "${YELLOW}Running go vet and go test...${NC}"
 (cd samples/gorm && go vet ./... && go test ./...)
 (cd samples/ent && go vet ./... && go test ./...)
 (cd samples/sqlc && go vet ./... && go test ./...)
+(cd samples/sqlboiler && go vet ./... && go test ./...)
 echo ""
 
 # Test GORM sample
@@ -43,6 +44,11 @@ echo -e "${YELLOW}Testing SQLC sample:${NC}"
 (cd samples/sqlc && CGO_ENABLED=1 go run main.go)
 echo ""
 
+# Test SQLBoiler sample
+echo -e "${YELLOW}Testing SQLBoiler sample:${NC}"
+(cd samples/sqlboiler && CGO_ENABLED=1 go run main.go)
+echo ""
+
 echo -e "${BLUE}⚡ Running performance benchmarks...${NC}"
 if [ -f "/usr/local/bin/test_runner" ]; then
     /usr/local/bin/test_runner
@@ -56,7 +62,9 @@ echo -e "${BLUE}📁 Code samples are available in:${NC}"
 echo "  - code/samples/gorm/"
 echo "  - code/samples/ent/"
 echo "  - code/samples/sqlc/"
+echo "  - code/samples/sqlboiler/"
 echo ""
 echo -e "${BLUE}🔧 To regenerate code:${NC}"
 echo "  - For Ent: cd ../samples/ent && go generate ./..."
-echo "  - For SQLC: cd ../samples/sqlc && sqlc generate" 
+echo "  - For SQLC: cd ../samples/sqlc && sqlc generate"
+echo "  - For SQLBoiler: cd ../samples/sqlboiler && sqlboiler sqlite3" 
