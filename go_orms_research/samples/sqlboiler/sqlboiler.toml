@@ -1,0 +1,6 @@
+pkgname="models"
+output="models"
+no-tests=true
+
+[sqlite3]
+  dbname = "test.db"

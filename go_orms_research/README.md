@@ -1,6 +1,6 @@
-# Go ORM Comparison: GORM vs Ent vs SQLC
+# Go ORM Comparison: GORM vs Ent vs SQLC vs SQLBoiler
 
-A comprehensive testing environment to compare the performance and usage of three popular Go ORMs: **GORM**, **Ent**, and **SQLC**.
+A comprehensive testing environment to compare the performance and usage of four popular Go ORMs: **GORM**, **Ent**, **SQLC**, and **SQLBoiler**.
 
 ## 🚀 Quick Start
 
@@ -28,7 +28,7 @@ docker compose up --build
 This will:
 1. Build a containerized environment with Go 1.22 and all dependencies
 2. Test each ORM sample individually
-3. Run performance benchmarks comparing all three ORMs
+3. Run performance benchmarks comparing all four ORMs
 4. Display results with the fastest ORM highlighted
 
 ### Clean up Docker containers
@@ -52,27 +52,6 @@ chmod +x run_tests.sh
 ./run_tests.sh
 ```
 
-### Testing Individual ORM Samples
-
-You can also test each ORM sample individually:
-
-```bash
-# Test GORM sample
-cd samples/gorm
-go mod tidy
-go run main.go
-
-# Test Ent sample
-cd ../ent
-go mod tidy
-go run main.go
-
-# Test SQLC sample
-cd ../sqlc
-go mod tidy
-go run main.go
-```
-
 ### Running Performance Benchmarks Only
 
 ```bash
@@ -87,23 +66,9 @@ go_orms_research/
 ├── README.md              # This file
 ├── samples/
 │   ├── gorm/              # GORM implementation example
-│   │   ├── main.go
-│   │   ├── go.mod
-│   │   └── go.sum
 │   ├── ent/               # Ent implementation example
-│   │   ├── main.go
-│   │   ├── generate.go
-│   │   ├── go.mod
-│   │   ├── go.sum
-│   │   └── ent/           # Generated Ent code
-│   └── sqlc/              # SQLC implementation example
-│       ├── main.go
-│       ├── schema.sql
-│       ├── query.sql
-│       ├── sqlc.yaml
-│       ├── go.mod
-│       ├── go.sum
-│       └── db/            # Generated SQLC code
+│   ├── sqlc/              # SQLC implementation example
+│   └── sqlboiler/         # SQLBoiler implementation example
 └── tests/
     ├── README.md          # Detailed testing documentation
     ├── test_runner.go     # Performance benchmark script
@@ -120,11 +85,12 @@ Based on benchmark testing, you should see performance results similar to:
 
 | Rank | ORM | Typical Performance | Characteristics |
 |------|-----|---------------------|----------------|
-| 🥇 1st | **SQLC** | ~10-15ms | Raw SQL performance, compile-time safety |
-| 🥈 2nd | **Ent** | ~10-16ms | Type-safe, good performance, rich features |
-| 🥉 3rd | **GORM** | ~60-85ms | Feature-rich, easy to use, some overhead |
+| 🥇 1st | **SQLC** | ~15ms | Raw SQL performance, compile-time safety |
+| 🥈 2nd | **Ent** | ~16ms | Type-safe, good performance, rich features |
+| 🥉 3rd | **SQLBoiler** | ~17ms | Database-first, generated models, good performance |
+| 4th | **GORM** | ~80-90ms | Feature-rich, easy to use, some overhead |
 
-*Results based on 1000 CRUD operations in containerized environment*
+*Results based on 1000 CRUD operations in the containerized Docker environment.*
 
 ## 🔧 Code Generation
 
@@ -142,37 +108,45 @@ cd samples/sqlc
 sqlc generate
 ```
 
-## 🧪 What Each Test Does
+### Regenerating SQLBoiler Code
+If you modify the database schema:
+```bash
+cd samples/sqlboiler
+# Ensure the database file (test.db) is up to date with the schema
+sqlboiler sqlite3
+```
 
-### Individual ORM Samples
-Each sample demonstrates basic CRUD operations:
-- **Create**: Insert new records
-- **Read**: Query existing data
-- **Update**: Modify existing records
-- **Delete**: Remove records
+## 🏁 Conclusion & Performance Analysis
 
-### Performance Benchmarks
-The benchmark test performs 1000 CRUD operations for each ORM and measures:
-- Total execution time
-- Relative performance comparison
-- Winner determination
+This testing environment provides a robust comparison of four major Go ORMs. The benchmarks reveal a clear performance hierarchy and highlight how the execution environment can influence results.
 
-## 📖 ORM Comparison Summary
+### Benchmark Results Summary
 
-| Feature | GORM | Ent | SQLC |
-|---------|------|-----|------|
-| **Philosophy** | Feature-rich ORM | Code generation + type safety | SQL-first approach |
-| **Type Safety** | Runtime | Compile-time | Compile-time |
-| **Learning Curve** | Easy | Medium | Medium |
-| **Performance** | Good | Very Good | Excellent |
-| **Flexibility** | High | Medium | High |
-| **Code Generation** | No | Yes | Yes |
+The final benchmark results for 1,000 CRUD operations were as follows:
 
-## 🎯 Use Case Recommendations
+| ORM         | Local (macOS, Go 1.22) | Docker (Linux, Go 1.22) |
+|-------------|------------------------|-------------------------|
+| **SQLBoiler** | **~9.1ms (🥇 1st)**    | ~16.8ms (3rd)           |
+| **SQLC**      | ~10.6ms (2nd)          | **~15.1ms (🥇 1st)**    |
+| **Ent**       | ~11.7ms (3rd)          | ~15.6ms (2nd)           |
+| **GORM**      | ~57.5ms (4th)          | ~82.6ms (4th)           |
 
-- **Choose GORM if**: You want rapid prototyping, have a small project, or prefer ORM convenience
-- **Choose Ent if**: You need type safety, have medium to large applications, and want good performance
-- **Choose SQLC if**: Performance is critical, you're comfortable with SQL, or need maximum control
+### Analysis: Why Did the Rankings Change?
+
+An interesting observation is the performance shift between the local and Docker environments. Locally, SQLBoiler was the fastest, but in the Docker container, SQLC took the lead. This discrepancy is an excellent example of why testing in a production-like environment is critical.
+
+The potential reasons for this behavior include:
+
+1.  **CGO Toolchain Differences**: The `mattn/go-sqlite3` driver uses CGO to interface with SQLite's C library. The performance of these Go-to-C calls is affected by the underlying C compiler and standard library.
+    *   **Local (macOS)**: Uses the Clang/LLVM toolchain.
+    *   **Docker (Alpine Linux)**: Uses GCC and the `musl` C standard library.
+    The interaction between Go and C in the Alpine/`musl` environment has a slightly different overhead profile, which was enough to impact SQLBoiler's ranking when margins are measured in single-digit milliseconds.
+
+2.  **Kernel and System Call Variations**: Docker runs on a Linux kernel (via a lightweight VM on macOS). System calls for file I/O, memory management, and process scheduling differ between the macOS (Darwin) and Linux kernels. These subtle differences can influence the performance of I/O-bound or CPU-intensive tasks.
+
+3.  **Virtualization Overhead**: The virtualization layer that Docker uses on macOS introduces a small but constant performance cost. This, combined with Docker's overlay filesystem, creates an environment with different characteristics than running natively on APFS.
+
+In conclusion, when performance margins are extremely tight, even minor environmental factors can be enough to reorder the rankings. The containerized results should be considered more representative of a typical production deployment.
 
 ## 🚨 Troubleshooting
 
@@ -201,7 +175,3 @@ chmod +x run_tests.sh
 2. Verify your Go version meets requirements
 3. For Docker issues, ensure Docker Desktop is running
 4. Review the detailed logs in `tests/README.md`
-
-## 📝 License
-
-This project is for educational and comparison purposes. Each ORM has its own license terms. 
