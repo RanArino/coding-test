@@ -8,21 +8,20 @@ This is a simple todo application built with [Ent](https://entgo.io/) ORM to dem
 ent-todo-app/
 ├── frontend/
 │   └── index.html          # Simple HTML frontend
-├── backend/
-│   ├── ent/                # Generated Ent code (DO NOT EDIT MANUALLY)
-│   │   ├── schema/         # Schema definitions
-│   │   │   ├── todo.go     # Todo entity schema
-│   │   │   └── user.go     # User entity schema
-│   │   ├── client.go       # Database client
-│   │   ├── ent.go          # Main Ent types
-│   │   ├── migrate/        # Migration utilities
-│   │   ├── todo/           # Todo entity operations
-│   │   ├── user/           # User entity operations
-│   │   └── ...             # Other generated files
-│   ├── go.mod
-│   ├── go.sum
-│   └── main.go             # Application entry point
-└── samples/                # Additional samples for reference
+└── backend/
+    ├── ent/                # Generated Ent code (DO NOT EDIT MANUALLY)
+    │   ├── schema/         # Schema definitions
+    │   │   ├── todo.go     # Todo entity schema
+    │   │   └── user.go     # User entity schema
+    │   ├── client.go       # Database client
+    │   ├── ent.go          # Main Ent types
+    │   ├── migrate/        # Migration utilities
+    │   ├── todo/           # Todo entity operations
+    │   ├── user/           # User entity operations
+    │   └── ...             # Other generated files
+    ├── go.mod
+    ├── go.sum
+    └── main.go             # Application entry point
 ```
 
 ## Key Educational Points
