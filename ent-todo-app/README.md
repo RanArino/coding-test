@@ -41,18 +41,64 @@ Schema files in `ent/schema/` define your entities:
 ### 3. Generated Code
 Ent generates all the CRUD operations, query builders, and type-safe code based on your schema definitions.
 
-## How to Run
+## How to Run and Test CRUD Operations
 
-1. **Backend:**
-   ```bash
-   cd backend
-   go mod tidy
-   go build -o todo-app .
-   ./todo-app
-   ```
+### 1. Start the Backend Server
 
-2. **Frontend:**
-   Open `frontend/index.html` in your browser
+Open a terminal and navigate to the backend directory:
+
+```bash
+cd backend
+go mod tidy
+go run main.go
+```
+
+The server will start on `http://localhost:8080` and you'll see logs like:
+```
+[INFO] 🚀 Ent ToDo Application Starting
+[SCHEMA] 📋 User Schema: Fields(name:string, email:string) + Edges(todos)
+[SCHEMA] 📝 Todo Schema: Fields(text:string, status:enum, owner_id:int) + Edges(owner)
+[INFO] 🗄️ Creating database schema from Ent definitions...
+[INFO] ✅ Database tables created: users, todos
+[INFO] 🌐 Server started on http://localhost:8080
+```
+
+### 2. Access the Frontend
+
+The frontend is automatically served by the backend at: **http://localhost:8080**
+
+Simply open your browser and go to `http://localhost:8080` to access the web interface.
+
+### 3. Perform CRUD Operations
+
+#### Via Web Interface:
+- Open `http://localhost:8080` in your browser
+- Use the forms to create users and todos
+- View the real-time logs to see Ent ORM operations
+
+#### Via API Endpoints (for testing):
+
+**Create a User:**
+```bash
+curl -X POST -d "name=John&email=john@example.com" http://localhost:8080/api/users
+```
+
+**List Users:**
+```bash
+curl http://localhost:8080/api/users
+```
+
+**Create a Todo:**
+```bash
+curl -X POST -d "text=Learn Ent ORM&status=PENDING&user_id=1" http://localhost:8080/api/todos
+```
+
+**List Todos:**
+```bash
+curl http://localhost:8080/api/todos
+```
+
+**Valid Todo Status Values:** `PENDING`, `IN_PROGRESS`, `COMPLETED`
 
 ## Development Workflow
 
