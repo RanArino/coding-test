@@ -2,6 +2,35 @@
 
 This is a simple todo application built with [Ent](https://entgo.io/) ORM to demonstrate proper Ent schema creation and usage.
 
+## 📁 Getting This Code
+
+### Option 1: Clone Only This Folder (Recommended)
+
+If you only want this specific example without downloading the entire repository:
+
+```bash
+# 1. Clone only this folder using sparse checkout (Git 2.25+)
+git clone --filter=blob:none --sparse https://github.com/RanArino/coding-test.git
+cd coding-test
+git sparse-checkout init --cone
+git sparse-checkout set coding-test/ent-todo-app
+
+# 2. Navigate to the project directory
+cd coding-test/ent-todo-app
+```
+
+### Option 2: Clone Entire Repository
+
+```bash
+git clone https://github.com/RanArino/coding-test.git
+cd coding-test/coding-test/ent-todo-app
+```
+
+**Why use Option 1?**
+- This repository contains multiple independent article examples
+- Saves bandwidth and storage by downloading only what you need
+- Faster clone time
+
 ## Project Structure
 
 ```
