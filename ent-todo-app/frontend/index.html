@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ent ToDo Application - Part 1: Fundamentals & Basic CRUD</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+        
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+        
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 30px;
+            padding: 30px;
+        }
+        
+        .panel {
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            border: 1px solid #e2e8f0;
+        }
+        
+        .panel h2 {
+            color: #1e40af;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .schema-panel {
+            grid-column: span 3;
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            border: 2px solid #0ea5e9;
+        }
+        
+        .schema-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-top: 20px;
+        }
+        
+                 .schema-box {
+             background: white;
+             padding: 20px;
+             border-radius: 8px;
+             border-left: 4px solid #0ea5e9;
+             width: 100%;
+             box-sizing: border-box;
+             overflow: hidden;
+         }
+        
+        .schema-box h3 {
+            color: #0c4a6e;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+        }
+        
+        .schema-field {
+            background: #f1f5f9;
+            padding: 8px 12px;
+            margin: 5px 0;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+        
+        .relationship {
+            background: #fef3c7;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #f59e0b;
+            margin-top: 15px;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #374151;
+        }
+        
+        input, select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+        
+        input:focus, select:focus {
+            outline: none;
+            border-color: #4f46e5;
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+        
+        button {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: transform 0.2s, box-shadow 0.2s;
+            width: 100%;
+            margin-top: 10px;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+        }
+        
+        .list-button {
+            background: linear-gradient(135deg, #059669 0%, #047857 100%);
+            margin-top: 20px;
+        }
+        
+        .clear-button {
+            background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+            width: auto;
+            padding: 8px 16px;
+            font-size: 12px;
+            margin-bottom: 15px;
+        }
+        
+        .results {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+            margin-top: 15px;
+            min-height: 100px;
+        }
+        
+        .results ul {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .results li {
+            padding: 8px 0;
+            border-bottom: 1px solid #f3f4f6;
+        }
+        
+        .results li:last-child {
+            border-bottom: none;
+        }
+        
+        .logs-panel {
+            grid-column: span 3;
+            background: #1f2937;
+            color: #f9fafb;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+        
+        .logs-panel h2 {
+            color: #60a5fa;
+            border-bottom: 2px solid #374151;
+            padding-bottom: 15px;
+        }
+        
+        .log-container {
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 1.4;
+        }
+        
+        .log-entry {
+            padding: 8px 0;
+            border-bottom: 1px solid #374151;
+        }
+        
+        .log-operation {
+            background: linear-gradient(135deg, #1e40af 0%, #1e3a8a 100%);
+            color: white;
+            padding: 12px 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            font-weight: bold;
+            border-left: 4px solid #60a5fa;
+        }
+        
+        .log-timestamp {
+            color: #9ca3af;
+            margin-right: 10px;
+        }
+        
+        .log-level-INFO { color: #60a5fa; }
+        .log-level-SUCCESS { color: #34d399; }
+        .log-level-ERROR { color: #f87171; }
+        .log-level-SQL { color: #fbbf24; }
+        .log-level-ENT { color: #a78bfa; }
+        .log-level-SCHEMA { color: #fb7185; }
+        
+        .log-message {
+            margin-left: 20px;
+            margin-top: 5px;
+        }
+        
+        .sql-query {
+            background: #374151;
+            padding: 10px;
+            border-radius: 6px;
+            margin: 5px 0;
+            border-left: 3px solid #fbbf24;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+        }
+        
+        .schema-info {
+            background: #4c1d95;
+            color: #c4b5fd;
+            padding: 8px 12px;
+            border-radius: 6px;
+            margin: 5px 0;
+            font-size: 11px;
+            border-left: 3px solid #8b5cf6;
+        }
+        
+                 .icon {
+             font-size: 1.2em;
+         }
+         
+         .code-toggle {
+             background: #4f46e5;
+             color: white;
+             border: none;
+             padding: 8px 16px;
+             border-radius: 5px;
+             cursor: pointer;
+             font-size: 0.85em;
+             transition: background 0.3s;
+         }
+         
+         .code-toggle:hover {
+             background: #3730a3;
+         }
+         
+         .code-toggle.active {
+             background: #059669;
+         }
+         
+         .code-section {
+             display: none;
+             margin-top: 15px;
+             width: 100%;
+             box-sizing: border-box;
+         }
+         
+         .code-section.active {
+             display: block;
+         }
+         
+         .code-path {
+             background: #f3f4f6;
+             color: #374151;
+             padding: 8px 12px;
+             font-family: 'Courier New', monospace;
+             font-size: 0.8em;
+             border-radius: 5px 5px 0 0;
+             border-bottom: 1px solid #d1d5db;
+         }
+         
+         .code-block {
+             background: #1f2937;
+             color: #f9fafb;
+             padding: 20px;
+             font-family: 'Fira Code', 'Consolas', 'Monaco', 'Courier New', monospace;
+             font-size: 0.85em;
+             line-height: 1.5;
+             border-radius: 0 0 5px 5px;
+             overflow-x: auto;
+             white-space: pre;
+             max-height: 400px;
+             overflow-y: auto;
+             width: 100%;
+             box-sizing: border-box;
+             word-wrap: break-word;
+             max-width: 100%;
+         }
+         
+         .code-block .keyword { color: #c792ea; }
+         .code-block .string { color: #c3e88d; }
+         .code-block .comment { color: #546e7a; }
+         .code-block .function { color: #82aaff; }
+         .code-block .type { color: #ffcb6b; }
+         .code-block .import { color: #89ddff; }
+        
+        .empty-state {
+            text-align: center;
+            color: #6b7280;
+            padding: 40px 20px;
+            font-style: italic;
+        }
+        
+        @media (max-width: 1200px) {
+            .main-content {
+                grid-template-columns: 1fr 1fr;
+            }
+            .schema-panel {
+                grid-column: span 2;
+            }
+            .logs-panel {
+                grid-column: span 2;
+            }
+        }
+        
+                 @media (max-width: 768px) {
+             .main-content {
+                 grid-template-columns: 1fr;
+             }
+             .schema-panel, .logs-panel {
+                 grid-column: span 1;
+             }
+             .schema-content {
+                 grid-template-columns: 1fr;
+             }
+             .code-block {
+                 font-size: 0.75em;
+                 padding: 15px;
+             }
+         }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 Ent ToDo Application</h1>
+            <p>Part 1: Fundamentals & Basic CRUD - Learn How Ent Schemas Work</p>
+        </div>
+        
+        <div class="main-content">
+                         <!-- Schema Definition Panel -->
+             <div class="panel schema-panel">
+                 <h2><span class="icon">📋</span> Ent Schema Definitions</h2>
+                 <div class="schema-content">
+                     <div class="schema-box">
+                         <h3>👤 User Schema</h3>
+                         <div class="schema-field">name: string (unique)</div>
+                         <div class="schema-field">email: string (unique)</div>
+                         <div class="schema-field">edges: todos → [Todo]</div>
+                         <div class="relationship">
+                             <strong>Relationship:</strong> User has many Todos (one-to-many)
+                         </div>
+                         <button class="code-toggle" onclick="toggleCode('user-schema')" style="margin-top: 10px;">📄 Show User Schema Code</button>
+                         <div id="user-schema" class="code-section">
+                             <div class="code-path">
+                                 <!-- backend/ent/schema/user.go -->
+                             </div>
+                             <div class="code-block"><span class="keyword">package</span> schema
+
+<span class="keyword">import</span> (
+	<span class="string">"entgo.io/ent"</span>
+	<span class="string">"entgo.io/ent/schema/field"</span>
+	<span class="string">"entgo.io/ent/schema/edge"</span>
+)
+
+<span class="comment">// User holds the schema definition for the User entity.</span>
+<span class="keyword">type</span> <span class="type">User</span> <span class="keyword">struct</span> {
+	ent.Schema
+}
+
+<span class="comment">// Fields of the User.</span>
+<span class="keyword">func</span> (<span class="type">User</span>) <span class="function">Fields</span>() []ent.Field {
+	<span class="keyword">return</span> []ent.Field{
+		field.<span class="function">String</span>(<span class="string">"name"</span>).<span class="function">Unique</span>(),
+		field.<span class="function">String</span>(<span class="string">"email"</span>).<span class="function">Unique</span>(),
+	}
+}
+
+<span class="comment">// Edges of the User.</span>
+<span class="keyword">func</span> (<span class="type">User</span>) <span class="function">Edges</span>() []ent.Edge {
+	<span class="keyword">return</span> []ent.Edge{
+		edge.<span class="function">To</span>(<span class="string">"todos"</span>, <span class="type">Todo</span>.Type),
+	}
+}</div>
+                         </div>
+                     </div>
+                     <div class="schema-box">
+                         <h3>📝 Todo Schema</h3>
+                         <div class="schema-field">text: string (required)</div>
+                         <div class="schema-field">status: enum (PENDING, IN_PROGRESS, COMPLETED)</div>
+                         <div class="schema-field">owner_id: int (foreign key)</div>
+                         <div class="schema-field">edges: owner → User</div>
+                         <div class="relationship">
+                             <strong>Relationship:</strong> Todo belongs to one User (many-to-one)
+                         </div>
+                         <button class="code-toggle" onclick="toggleCode('todo-schema')" style="margin-top: 10px;">📄 Show Todo Schema Code</button>
+                         <div id="todo-schema" class="code-section">
+                             <div class="code-path">
+                                 <!-- backend/ent/schema/todo.go -->
+                             </div>
+                             <div class="code-block"><span class="keyword">package</span> schema
+
+<span class="keyword">import</span> (
+	<span class="string">"entgo.io/ent"</span>
+	<span class="string">"entgo.io/ent/schema/field"</span>
+	<span class="string">"entgo.io/ent/schema/edge"</span>
+)
+
+<span class="comment">// Todo holds the schema definition for the Todo entity.</span>
+<span class="keyword">type</span> <span class="type">Todo</span> <span class="keyword">struct</span> {
+	ent.Schema
+}
+
+<span class="comment">// Fields of the Todo.</span>
+<span class="keyword">func</span> (<span class="type">Todo</span>) <span class="function">Fields</span>() []ent.Field {
+	<span class="keyword">return</span> []ent.Field{
+		field.<span class="function">Text</span>(<span class="string">"text"</span>).<span class="function">NotEmpty</span>(),
+		field.<span class="function">Enum</span>(<span class="string">"status"</span>).
+			<span class="function">Values</span>(<span class="string">"PENDING"</span>, <span class="string">"IN_PROGRESS"</span>, <span class="string">"COMPLETED"</span>).
+			<span class="function">Default</span>(<span class="string">"PENDING"</span>),
+		field.<span class="function">Int</span>(<span class="string">"owner_id"</span>).<span class="function">Optional</span>(), 
+		<span class="comment">// Mark owner_id as optional</span>
+	}
+}
+
+<span class="comment">// Edges of the Todo.</span>
+<span class="keyword">func</span> (<span class="type">Todo</span>) <span class="function">Edges</span>() []ent.Edge {
+	<span class="keyword">return</span> []ent.Edge{
+		edge.<span class="function">From</span>(<span class="string">"owner"</span>, <span class="type">User</span>.Type).
+			<span class="function">Ref</span>(<span class="string">"todos"</span>).
+			<span class="function">Field</span>(<span class="string">"owner_id"</span>).
+			<span class="function">Unique</span>(),
+	}
+}</div>
+                         </div>
+                     </div>
+                 </div>
+             </div>
+            
+            <!-- Create User Panel -->
+            <div class="panel">
+                <h2><span class="icon">👤</span> Create User</h2>
+                <form id="createUserForm">
+                    <div class="form-group">
+                        <label for="userName">Name:</label>
+                        <input type="text" id="userName" name="name" placeholder="Enter user name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="userEmail">Email:</label>
+                        <input type="email" id="userEmail" name="email" placeholder="Enter email address" required>
+                    </div>
+                    <button type="submit">Create User</button>
+                </form>
+                
+                <button class="list-button" id="listUsersBtn">📋 List All Users</button>
+                
+                <div class="results">
+                    <h3>Users:</h3>
+                    <ul id="userList">
+                        <li class="empty-state">No users created yet. Create your first user above!</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- Create Todo Panel -->
+            <div class="panel">
+                <h2><span class="icon">📝</span> Create Todo</h2>
+                <form id="createTodoForm">
+                    <div class="form-group">
+                        <label for="todoText">Text:</label>
+                        <input type="text" id="todoText" name="text" placeholder="Enter todo description" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="todoStatus">Status:</label>
+                        <select id="todoStatus" name="status" required>
+                            <option value="PENDING">PENDING</option>
+                            <option value="IN_PROGRESS">IN_PROGRESS</option>
+                            <option value="COMPLETED">COMPLETED</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="todoOwner">Owner User ID:</label>
+                        <select id="todoOwner" name="user_id" required>
+                            <option value="">-- Select User --</option>
+                        </select>
+                    </div>
+                    <button type="submit">Create Todo</button>
+                </form>
+                
+                <button class="list-button" id="listTodosBtn">📋 List All Todos</button>
+                
+                <div class="results">
+                    <h3>Todos:</h3>
+                    <ul id="todoList">
+                        <li class="empty-state">No todos created yet. Create your first todo above!</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- Logs Panel -->
+            <div class="panel logs-panel">
+                <h2><span class="icon">🔍</span> Backend Process & SQL Logs</h2>
+                <button class="clear-button" id="clearLogsBtn">🗑️ Clear Logs</button>
+                <div class="log-container" id="logContainer">
+                    <div class="empty-state">Logs will appear here when you perform operations...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const logContainer = document.getElementById('logContainer');
+        const userList = document.getElementById('userList');
+        const todoList = document.getElementById('todoList');
+
+        // Fetch and display logs
+        async function fetchLogs() {
+            try {
+                const response = await fetch('/api/logs');
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                
+                const logs = await response.json();
+                
+                if (logs.length === 0) {
+                    logContainer.innerHTML = '<div class="empty-state">No logs available. Perform an operation to see logs.</div>';
+                    return;
+                }
+                
+                logContainer.innerHTML = '';
+                
+                logs.forEach(logEntry => {
+                    const logDiv = document.createElement('div');
+                    
+                    if (logEntry.Level === 'OPERATION') {
+                        logDiv.className = 'log-operation';
+                        logDiv.innerHTML = `<strong>${logEntry.Message}</strong>`;
+                    } else {
+                        logDiv.className = 'log-entry';
+                        
+                        let content = `
+                            <span class="log-timestamp">${logEntry.Timestamp}</span>
+                            <span class="log-level-${logEntry.Level}">[${logEntry.Level}]</span>
+                            <div class="log-message">${logEntry.Message}</div>
+                        `;
+                        
+                        if (logEntry.SQL) {
+                            content += `<div class="sql-query">SQL: ${logEntry.SQL}</div>`;
+                        }
+                        
+                        if (logEntry.SchemaInfo) {
+                            content += `<div class="schema-info">Schema: ${logEntry.SchemaInfo}</div>`;
+                        }
+                        
+                        logDiv.innerHTML = content;
+                    }
+                    
+                    logContainer.appendChild(logDiv);
+                });
+                
+                // Auto-scroll to bottom
+                logContainer.scrollTop = logContainer.scrollHeight;
+                
+            } catch (error) {
+                console.error('Error fetching logs:', error);
+                logContainer.innerHTML = '<div class="log-entry log-level-ERROR">❌ Failed to fetch logs. Check console for details.</div>';
+            }
+        }
+
+        // Fetch users and update display
+        async function fetchUsers() {
+            try {
+                const response = await fetch('/api/users');
+                const result = await response.text();
+                
+                userList.innerHTML = '';
+                const lines = result.split('\n').filter(line => line.trim() && !line.startsWith('Users:'));
+                
+                // Update Owner User dropdown for todos
+                const todoOwnerSelect = document.getElementById('todoOwner');
+                todoOwnerSelect.innerHTML = '<option value="">-- Select User --</option>';
+                let hasUsers = false;
+                if (lines.length === 0) {
+                    userList.innerHTML = '<li class="empty-state">No users found. Create your first user!</li>';
+                    todoOwnerSelect.disabled = true;
+                    document.getElementById('createTodoForm').querySelector('button[type="submit"]').disabled = true;
+                    document.getElementById('todoOwner').insertAdjacentHTML('afterend', '<div id="noUserMsg" style="color:#dc2626;margin-top:8px;">You must create a user before adding a todo.</div>');
+                } else {
+                    lines.forEach(line => {
+                        const li = document.createElement('li');
+                        li.textContent = line.trim();
+                        userList.appendChild(li);
+                        // Parse user ID and name from the line
+                        const match = line.match(/ID: (\d+), Name: ([^,]+)/);
+                        if (match) {
+                            const userId = match[1];
+                            const userName = match[2];
+                            const opt = document.createElement('option');
+                            opt.value = userId;
+                            opt.textContent = `ID: ${userId} - ${userName}`;
+                            todoOwnerSelect.appendChild(opt);
+                            hasUsers = true;
+                        }
+                    });
+                    todoOwnerSelect.disabled = false;
+                    document.getElementById('createTodoForm').querySelector('button[type="submit"]').disabled = false;
+                    const msg = document.getElementById('noUserMsg');
+                    if (msg) msg.remove();
+                }
+            } catch (error) {
+                console.error('Error fetching users:', error);
+            }
+        }
+
+        // Fetch todos and update display
+        async function fetchTodos() {
+            try {
+                const response = await fetch('/api/todos');
+                const result = await response.text();
+                
+                todoList.innerHTML = '';
+                const lines = result.split('\n').filter(line => line.trim() && !line.startsWith('Todos:'));
+                
+                if (lines.length === 0) {
+                    todoList.innerHTML = '<li class="empty-state">No todos found. Create your first todo!</li>';
+                } else {
+                    lines.forEach(line => {
+                        const li = document.createElement('li');
+                        li.textContent = line.trim();
+                        todoList.appendChild(li);
+                    });
+                }
+            } catch (error) {
+                console.error('Error fetching todos:', error);
+            }
+        }
+
+        // Event handlers
+        document.getElementById('createUserForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            
+            try {
+                const response = await fetch('/api/users', {
+                    method: 'POST',
+                    body: new URLSearchParams(formData)
+                });
+                
+                if (response.ok) {
+                    e.target.reset();
+                    await Promise.all([fetchLogs(), fetchUsers()]);
+                } else {
+                    alert('Failed to create user');
+                }
+            } catch (error) {
+                console.error('Error creating user:', error);
+                alert('Error creating user');
+            }
+        });
+
+        document.getElementById('createTodoForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            
+            try {
+                const response = await fetch('/api/todos', {
+                    method: 'POST',
+                    body: new URLSearchParams(formData)
+                });
+                
+                if (response.ok) {
+                    e.target.reset();
+                    await Promise.all([fetchLogs(), fetchTodos()]);
+                } else {
+                    alert('Failed to create todo');
+                }
+            } catch (error) {
+                console.error('Error creating todo:', error);
+                alert('Error creating todo');
+            }
+        });
+
+        document.getElementById('listUsersBtn').addEventListener('click', async () => {
+            await Promise.all([fetchLogs(), fetchUsers()]);
+        });
+
+        document.getElementById('listTodosBtn').addEventListener('click', async () => {
+            await Promise.all([fetchLogs(), fetchTodos()]);
+        });
+
+        document.getElementById('clearLogsBtn').addEventListener('click', () => {
+            logContainer.innerHTML = '<div class="empty-state">Logs cleared. Perform an operation to see new logs.</div>';
+        });
+
+        // Initial load
+        fetchLogs();
+        fetchUsers();
+        fetchTodos();
+        
+                 // Auto-refresh logs every 2 seconds during activity
+         setInterval(fetchLogs, 2000);
+         
+         // Toggle code sections
+         function toggleCode(sectionId) {
+             console.log('Toggling section:', sectionId);
+             const section = document.getElementById(sectionId);
+             const button = document.querySelector(`[onclick="toggleCode('${sectionId}')"]`);
+             
+             console.log('Section found:', section);
+             console.log('Button found:', button);
+             
+             if (!section || !button) {
+                 console.error('Section or button not found!');
+                 return;
+             }
+             
+             if (section.classList.contains('active')) {
+                 section.classList.remove('active');
+                 button.classList.remove('active');
+                 button.textContent = button.textContent.replace('Hide', 'Show');
+             } else {
+                 section.classList.add('active');
+                 button.classList.add('active');
+                 button.textContent = button.textContent.replace('Show', 'Hide');
+             }
+         }
+     </script>
+</body>
+</html>
