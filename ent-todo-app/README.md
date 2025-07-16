@@ -13,10 +13,10 @@ If you only want this specific example without downloading the entire repository
 git clone --filter=blob:none --sparse https://github.com/RanArino/coding-test.git
 cd coding-test
 git sparse-checkout init --cone
-git sparse-checkout set coding-test/ent-todo-app
+git sparse-checkout set ent-todo-app
 
 # 2. Navigate to the project directory
-cd coding-test/ent-todo-app
+cd ent-todo-app
 ```
 
 ### Option 2: Clone Entire Repository
